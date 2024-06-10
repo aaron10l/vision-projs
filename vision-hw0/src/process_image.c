@@ -77,7 +77,7 @@ image rgb_to_grayscale(image im)
 
   for (r = 0; r < im.w; r++){
     for (c = 0; c < im.h; c++ /*  :P  */){
-      luma_val = get_pixel(im, r, c, 0) + get_pixel(im, r, c, 1) + get_pixel(im, r, c, 2);
+      luma_val = 0.299 * get_pixel(im, r, c, 0) + 0.587 * get_pixel(im, r, c, 1) + 0.114 * get_pixel(im, r, c, 2);
       set_pixel(gray, r, c, 0, luma_val);
     }
   }
