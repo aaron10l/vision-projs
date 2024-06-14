@@ -106,7 +106,6 @@ void clamp_image(image im)
   }
 }
 
-
 // These might be handy
 float three_way_max(float a, float b, float c)
 {
@@ -120,10 +119,75 @@ float three_way_min(float a, float b, float c)
 
 void rgb_to_hsv(image im)
 {
-    // TODO Fill this in
+    int x, y;
+
+    for (x = 0; x < im.w; x++) {
+        for (y = 0; y < im.h; y++) {
+            float r_chan = get_pixel(im, x, y, 0);
+            float g_chan = get_pixel(im, x, y, 1);
+            float b_chan = get_pixel(im, x, y, 2);
+
+            float V = three_way_max(r_chan, g_chan, b_chan);
+            float C = V - three_way_min(r_chan, g_chan, b_chan);
+            float S = (V == 0) ? 0 : C / V;
+
+            float H = 0;
+            if (C != 0) {
+                if (V == r_chan) {
+                    H = (g_chan - b_chan) / C;
+                } else if (V == g_chan) {
+                    H = (b_chan - r_chan) / C + 2;
+                } else { // V == b_chan
+                    H = (r_chan - g_chan) / C + 4;
+                }
+                H *= 60;
+                if (H < 0) H += 360;
+            }
+
+            set_pixel(im, x, y, 0, H / 360.0); // Normalize H to be in [0, 1]
+            set_pixel(im, x, y, 1, S);
+            set_pixel(im, x, y, 2, V);
+        }
+    }
 }
 
 void hsv_to_rgb(image im)
 {
-    // TODO Fill this in
+    int x, y;
+
+    for (x = 0; x < im.w; x++) {
+        for (y = 0; y < im.h; y++) {
+            float H = get_pixel(im, x, y, 0) * 360.0; // Convert back to degrees
+            float S = get_pixel(im, x, y, 1);
+            float V = get_pixel(im, x, y, 2);
+
+            float C = V * S;
+            float X = C * (1 - fabs(fmod(H / 60.0, 2) - 1));
+            float m = V - C;
+
+            float r_prime, g_prime, b_prime;
+
+            if (H >= 0 && H < 60) {
+                r_prime = C; g_prime = X; b_prime = 0;
+            } else if (H >= 60 && H < 120) {
+                r_prime = X; g_prime = C; b_prime = 0;
+            } else if (H >= 120 && H < 180) {
+                r_prime = 0; g_prime = C; b_prime = X;
+            } else if (H >= 180 && H < 240) {
+                r_prime = 0; g_prime = X; b_prime = C;
+            } else if (H >= 240 && H < 300) {
+                r_prime = X; g_prime = 0; b_prime = C;
+            } else {
+                r_prime = C; g_prime = 0; b_prime = X;
+            }
+
+            float r = r_prime + m;
+            float g = g_prime + m;
+            float b = b_prime + m;
+
+            set_pixel(im, x, y, 0, r);
+            set_pixel(im, x, y, 1, g);
+            set_pixel(im, x, y, 2, b);
+        }
+    }
 }
